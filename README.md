@@ -71,22 +71,31 @@ pip install -r requirements.txt
 
 Ensure MongoDB is running on your local machine or connect to your MongoDB Atlas cluster.
 
+---
+
 ### Running the Project
 
 1. **Set up Environment Variables**:
    - Create a `.env` file in the project directory.
-   - Add the following variables to configure MongoDB and other sensitive information:
+   - Add the following variables to configure MongoDB, Flask's secret key, and API keys used for uploading and verifying signatures:
 
      ```plaintext
      MONGO_URI=mongodb://localhost:27017/your_database
      SECRET_KEY=your_secret_key
+     UPLOAD_API_KEY=18daa167476e0a371966fa954ef38f79
+     API_KEY_VERIFICATION=dc4b3f8464b89175b6a1bae401483fe0
      ```
 
-2. **Start the Flask Application**:
+     - **Note**: The API keys must match the values checked in `static/js/script.js` within the `uploadSignatures()` and `verifySignature()` functions.
 
-   ```bash
-   flask run
-   ```
+2. **Start the Flask Application**:
+   - Run the project using:
+
+     ```bash
+     py app.py
+     ```
+
+---
 
    The project should now be running at [http://127.0.0.1:5000](http://127.0.0.1:5000).
 
