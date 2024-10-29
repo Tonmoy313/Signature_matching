@@ -146,7 +146,7 @@ Ensure MongoDB is running on your local machine or connect to your MongoDB Atlas
      ├── requirements.txt               # Python package dependencies
      ├── resnet_cosine.py               # ResNet-based cosine similarity logic
      └── vgg_cosine.py                  # VGG-based cosine similarity logic
-     ```
+  ```
 
 ---
 
