@@ -1,6 +1,15 @@
 # Signature Verification System
 
-Welcome to the Signature Verification System! This project uses Flask as the backend framework, HTML/CSS/JavaScript for the frontend, and MongoDB as the database. It enables users to verify the authenticity of a signature by comparing it with stored reference images.
+
+![Screenshot 2024-10-29 235631](https://github.com/user-attachments/assets/e5edcdf8-59c8-4399-81f7-8025b82de10f)
+
+Welcome to the Signature Verification System!
+
+This project is designed to verify the authenticity of signatures through advanced image processing techniques. It utilizes Flask as the backend framework, complemented by HTML, CSS, and JavaScript for the frontend, while MongoDB serves as the database.
+
+The system enables users to compare signatures against stored reference images, employing models like VGG and ResNet for feature extraction and utilizing cosine similarity to assess authenticity.
+
+To run this project, please follow the commands provided below. If you find this project valuable, we would greatly appreciate your support by giving it a star! We welcome any suggestions or collaboration inquiries.  
 
 ---
 
