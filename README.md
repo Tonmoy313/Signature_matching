@@ -59,8 +59,8 @@ Ensure you have the following installed:
 Clone the repository and navigate into the project directory:
 
 ```bash
-git clone https://github.com/your-username/signature-verification-system.git
-cd signature-verification-system
+git clone https://github.com/Tonmoy313/Signature_matching.git
+cd Signature_matching
 ```
 
 Install the necessary Python packages:
@@ -80,15 +80,17 @@ Ensure MongoDB is running on your local machine or connect to your MongoDB Atlas
    - Add the following variables to configure MongoDB, Flask's secret key, and API keys used for uploading and verifying signatures:
 
      ```plaintext
-     MONGO_URI=mongodb://localhost:27017/your_database
-     SECRET_KEY=your_secret_key
      UPLOAD_API_KEY=18daa167476e0a371966fa954ef38f79
      API_KEY_VERIFICATION=dc4b3f8464b89175b6a1bae401483fe0
      ```
 
      - **Note**: The API keys must match the values checked in `static/js/script.js` within the `uploadSignatures()` and `verifySignature()` functions.
 
-2. **Start the Flask Application**:
+2. **Change the Connection String**:
+   - Replace the connection string in Database\connection.py
+  
+     
+3. **Start the Flask Application**:
    - Run the project using:
 
      ```bash
@@ -111,19 +113,31 @@ Ensure MongoDB is running on your local machine or connect to your MongoDB Atlas
 
 ## Folder Structure
 
-```
-signature-verification-system/
-│
-├── app.py                 # Main Flask application file
-├── requirements.txt       # Python dependencies
-├── README.md              # Project documentation
-├── static/                # Static files (CSS, JS, images)
-│   ├── css/
-│   ├── js/
-│   └── images/
-└── templates/             # HTML templates
-    └── index.html
-```
+ ```
+     Signature_matching/
+     ├── Database/
+     │   └── connection.py              # Database connection script
+     ├── Dataset/                       # Contains sample or reference dataset (optional)
+     ├── env/
+     ├── static/
+     │   ├── css/
+     │   │   └── style.css              # Custom styles
+     │   ├── js/
+     │   │   └── script.js              # JavaScript functions for the front-end
+     │   ├── person/                    # Folder for user-specific signature images
+     │   └── uploads/
+     │       └── input.jpg              # Placeholder for uploaded images
+     ├── templates/
+     │   └── index.html                 # Main HTML file
+     ├── .env                           # Environment variables file
+     ├── .gitignore                     # Specifies files to ignore in Git
+     ├── api_key.py                     # API key validation script
+     ├── app.py                         # Main Flask application
+     ├── README.md                      # Project documentation
+     ├── requirements.txt               # Python package dependencies
+     ├── resnet_cosine.py               # ResNet-based cosine similarity logic
+     └── vgg_cosine.py                  # VGG-based cosine similarity logic
+     ```
 
 ---
 
