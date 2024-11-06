@@ -70,6 +70,12 @@ Clone the repository and navigate into the project directory:
 ```bash
 git clone https://github.com/Tonmoy313/Signature_matching.git
 cd Signature_matching
+code .
+```
+Create a Virtual Environment:
+
+```bash
+python -m venv env
 ```
 
 Install the necessary Python packages:
@@ -89,11 +95,14 @@ Ensure MongoDB is running on your local machine or connect to your MongoDB Atlas
    - Add the following variables to configure MongoDB, Flask's secret key, and API keys used for uploading and verifying signatures:
 
      ```plaintext
-     UPLOAD_API_KEY=18daa167476e0a371966fa954ef38f79
-     API_KEY_VERIFICATION=dc4b3f8464b89175b6a1bae401483fe0
+     MONGODB = your_mongoDb_connection_string
+     
+     UPLOAD_API_KEY=your_upload_api_key
+     API_KEY_VERIFICATION=your_app_key_verificaiton
      ```
 
      - **Note**: The API keys must match the values checked in `static/js/script.js` within the `uploadSignatures()` and `verifySignature()` functions.
+     - you want my api key give me a star & check to the `static/js/script.js`, find `x-api-key`
 
 2. **Change the Connection String**:
    - Replace the connection string in Database\connection.py

@@ -1,10 +1,15 @@
 # import sys
 # print(sys.executable)
 from pymongo import MongoClient, errors
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+MONGODB_CONNECTION = os.getenv("MONGODB")
 
 def connect_to_mongo():
     try:
-        CONNECTION_STRING = "mongodb+srv://abdullahalmahmudcse007:5s3XzQhtxtsA5zGt@cluster0.q78iz.mongodb.net"
+        CONNECTION_STRING = MONGODB_CONNECTION
         
         client = MongoClient(CONNECTION_STRING) 
         db = client['Signature_Matching']
