@@ -175,10 +175,29 @@ function uploadSignatures() {
     console.log('FormData:', formData);
 
     // Show the loading modal
-    const uploadModal = new bootstrap.Modal(document.getElementById('uploadModal'));
+    const resultModal = new bootstrap.Modal(document.getElementById('uploadModal'));
     document.getElementById('uploadLoadingSection').classList.remove('d-none');
     document.getElementById('uploadResultSection').classList.add('d-none');
-    uploadModal.show();
+    resultModal.show();
+
+    console.log(formData)
+    
+    const loadingTexts = [
+        'Verifying image formats...',
+        'Preparing images for conversion...',
+        'Converting images to Base64 format...',
+        'Connecting to database...',
+        'Uploading images...',
+        'Wrapping up... Almost there!!',
+        'Please Wait...'
+    ];    
+
+    let currentStep = 0;
+    const loadingInterval = setInterval(() => {
+        console.log("The currentStep is:", currentStep, ". THe message is :", loadingTexts[currentStep])
+        document.getElementById('uploadloadingText').textContent = loadingTexts[currentStep];
+        currentStep = (currentStep + 1) % loadingTexts.length; 
+        }, 2000);
 
     // Make API call
     fetch('/upload', {
@@ -190,6 +209,7 @@ function uploadSignatures() {
     })
     .then(response => response.json())
     .then(data => {
+        clearInterval(loadingInterval);
         // Display success or error messages based on the response
         showUploadResults(data.message ? true : false, data.message || data.error);
     })
@@ -201,8 +221,8 @@ function uploadSignatures() {
 
 function showUploadResults(isSuccess, message) {
     // Prepare result elements
-    const resultIcon = document.getElementById('resultIcon');
-    const resultText = document.getElementById('resultText');
+    const resultIcon = document.getElementById('uploadresultIcon');
+    const resultText = document.getElementById('uploadresultText');
 
     // Set icon and text based on result
     resultIcon.innerHTML = isSuccess 
@@ -259,25 +279,23 @@ function verifySignature() {
   resultModal.show();
 
   console.log(formData)
-
-  let currentStep = 0; 
+ 
   const loadingTexts = [
     'Connecting to Database...',
     `Retrieving signature records for ${personName}...`,
     'Preparing images for analysis...',
     'Analyzing reference signatures...',
     'Comparing with provided signature...',
-    'Generating results...'
+    'Generating results...',
+    'Please Wait...'
   ];
 
+  let currentStep = 0;
   const loadingInterval = setInterval(() => {
-    if (currentStep < loadingTexts.length) {
-      document.getElementById('loadingText').textContent = loadingTexts[currentStep];
-      currentStep++;
-    } else {
-      clearInterval(loadingInterval); // Clear the interval when done
-    }
-  }, 2000);
+    console.log("The currentStep is:", currentStep, ". THe message is :", loadingTexts[currentStep])
+    document.getElementById('loadingText').textContent = loadingTexts[currentStep];
+    currentStep = (currentStep + 1) % loadingTexts.length; 
+    }, 2000);
 
 
   fetch('/signature-matching', {
@@ -289,7 +307,8 @@ function verifySignature() {
   })
     .then(response => response.json())
     .then(data => {
-      showResults(data);
+        clearInterval(loadingInterval);
+        showResults(data);
     })
     .catch(error => {
       console.error('Error:', error);
