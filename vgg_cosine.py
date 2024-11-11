@@ -30,7 +30,7 @@ model = create_vgg16_model(input_shape)
 
 feature_extractor = Model(inputs=model.input, outputs=model.layers[-3].output)
 
-def extract_features(image_path):
+def extract_features_with_vgg(image_path):
     img = image.load_img(image_path, target_size=(224, 224)) ## type: <class 'PIL.Image.Image'>
     x = image.img_to_array(img)   # Shape: (224, 224, 3) & type: <class 'numpy.ndarray'> 
     x = np.expand_dims(x, axis=0) # Shape: (1, 224, 224, 3) & type: <class 'numpy.ndarray'>
@@ -46,11 +46,11 @@ def calculate_cosine_similarity(input_features, real_features):
 
 
 def is_signature_genuine(input_image_path, real_images_paths, similarity_threshold=85):
-    input_features = extract_features(input_image_path)
+    input_features = extract_features_with_vgg(input_image_path)
     print("Checking Real Images Similarities....")
     similarities = []
     for real_image_path in real_images_paths:
-        real_features = extract_features(real_image_path)
+        real_features = extract_features_with_vgg(real_image_path)
         similarity = calculate_cosine_similarity(input_features, real_features)
         similarities.append(similarity)
 

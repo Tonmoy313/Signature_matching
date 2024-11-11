@@ -1,25 +1,27 @@
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from skimage.measure import regionprops
 from skimage.filters import threshold_otsu
 from tensorflow.keras.preprocessing import image
 from skimage import transform
 from scipy import ndimage
 
-def show_images(imgs, titles):
-    """ Display images side by side """
-    fig, ax = plt.subplots(1, len(imgs), figsize=(15, 5))
-    for i, img in enumerate(imgs):
-        if img.dtype == bool:
-            img = img.astype(float)
-        ax[i].imshow(img, cmap='gray' if img.ndim == 2 else None)
-        ax[i].set_title(titles[i])
-        ax[i].axis('off')
-    plt.show()
+# def show_images(imgs, titles):
+#     """ Display images side by side """
+#     fig, ax = plt.subplots(1, len(imgs), figsize=(15, 5))
+#     for i, img in enumerate(imgs):
+#         if img.dtype == bool:
+#             img = img.astype(float)
+#         ax[i].imshow(img, cmap='gray' if img.ndim == 2 else None)
+#         ax[i].set_title(titles[i])
+#         ax[i].axis('off')
+#     plt.show()
 
 def rgb_to_grayscale(img):
     """Convert RGB image to grayscale"""
     return np.dot(img[..., :3], [0.2989, 0.5870, 0.1140])
+
+
 # def rgb_to_grayscale(img):
 #     """ Converts RGB image to grayscale """
 #     # Converts rgb to grayscale
@@ -131,46 +133,25 @@ def process_and_extract_features(image_path):
     # Step 1: Load the image
     img = image.load_img(image_path)
     img = image.img_to_array(img)
-    print("img :", img.shape)
-    print("img Type:", type(img))
 
     # Step 2: Convert to Grayscale
     grayscale_img = rgb_to_grayscale(img)
-    print("grayscale_img :", grayscale_img.shape)
-    print("grayscale_img Type:", type(grayscale_img))
 
     # Step 3: Convert Grayscale to Binary
     binary_img = grayscale_to_binary(grayscale_img)
-    print("binary_img :", binary_img.shape)
-    print("binary_img Type:", type(binary_img))
-   
 
     cropped_img = crop_to_bounding_box(binary_img)
-    print("cropped_img :", cropped_img.shape)
-    print("cropped_img Type:", type(cropped_img))
-
     resized_img = resize_with_padding(cropped_img, 224)
-    print("resized_img :", resized_img.shape)
-    print("resized_img Type:", type(resized_img))
 
-    model_ready_img = np.stack([resized_img] * 3, axis=-1)
-    print("Finale Image:", model_ready_img.shape)
-    print("Final Image Type:", type(model_ready_img))
+    # Step 4: Expand upto 3 channel dimension 
+    model_ready_img = np.expand_dims(resized_img, axis=-1)  
 
-    # show_images([img, grayscale_img, binary_img, cropped_img, resized_img, model_ready_img],
-    #             ["Original Image", "Grayscale", "Binary", "Cropped", "Resized 224x224", "Final Image"])
-    
     # Step 5: Extract features
     white_ratio = ratio_of_white_pixels(resized_img)
     centroid = centroid_of_white_pixels(resized_img)
     eccentricity, solidity = eccentricity_and_solidity(resized_img)
     skewness, kurtosis = skewness_and_kurtosis(resized_img)
 
-    print(f"Ratio of white pixels: {white_ratio}")
-    print(f"Centroid: {centroid}")
-    print(f"Eccentricity: {eccentricity}, Solidity: {solidity}")
-    print(f"Skewness: {skewness}, Kurtosis: {kurtosis}")
-    
     return {
         'grayscale_img': grayscale_img,
         'binary_img': binary_img.astype('uint8'),
@@ -184,9 +165,6 @@ def process_and_extract_features(image_path):
         'skew': skewness,
         'kurtosis': kurtosis,
     }
-
-
-
 # Example usage
 # image_path = 'Person\WhatsApp Image 2024-11-05 at 21.08.04_de1ca215.jpg'
 # features = process_and_extract_features(image_path)

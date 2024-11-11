@@ -2,6 +2,7 @@
 # print(sys.executable)
 from pymongo import MongoClient, errors
 from dotenv import load_dotenv
+import pymongo
 import os
 
 load_dotenv()
@@ -23,6 +24,11 @@ def connect_to_mongo():
 def data_store(db, documents):
     try:
         collection = db['tbl_signatures']
+        # Check if index exists on _id and person_name
+        if 'person_name_1_id_1' not in collection.index_information():
+            db['tbl_signatures'].create_index([('person_name', pymongo.ASCENDING), ('_id', pymongo.ASCENDING)])
+            db['tbl_signatures'].create_index([('person_name', pymongo.ASCENDING)])
+
         results = collection.insert_many(documents)
         if results:
             print("The images have been successfully saved.")
@@ -37,7 +43,8 @@ def data_store(db, documents):
 def fetch_signatures(db, person_name):
     try:
         collection = db['tbl_signatures']
-        documents = list(collection.find({'person_name': person_name}))  
+        documents = list(collection.find({'person_name': person_name}, {'signature': 1, '_id': 0}))
+  
         if documents:
             print(f"The signatures of {person_name} have been fetched successfully.")
             return documents 

@@ -10,7 +10,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 base_model = ResNet50(weights='imagenet')
 feature_extractor = Model(inputs=base_model.input, outputs=base_model.layers[-3].output)  
 
-def extract_features_by_resnet(image_path):
+def extract_features_with_resnet(image_path):
     img = image.load_img(image_path, target_size=(224, 224))
     # type: <class 'PIL.Image.Image'>
     x = image.img_to_array(img)
@@ -34,11 +34,11 @@ def calculate_cosine_similarity(input_features, real_features):
 
 
 def is_signature_genuine_resnet(input_image_path, real_images_paths, similarity_threshold=80):
-    input_features = extract_features_by_resnet(input_image_path)
+    input_features = extract_features_with_resnet(input_image_path)
     print("Checking Real Images Similarities....")
     similarities = []
     for real_image_path in real_images_paths:
-        real_features = extract_features_by_resnet(real_image_path)
+        real_features = extract_features_with_resnet(real_image_path)
         similarity = calculate_cosine_similarity(input_features, real_features)
         similarities.append(similarity)
 

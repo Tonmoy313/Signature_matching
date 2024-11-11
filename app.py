@@ -9,6 +9,8 @@ import io
 from imagePreprocess import process_and_extract_features
 from vgg_cosine import is_signature_genuine
 from resnet_cosine import is_signature_genuine_resnet
+import time
+from datetime import timedelta 
 
 load_dotenv()
 app = Flask(__name__)
@@ -87,10 +89,6 @@ def upload_image():
         
                 try:
                     base64_image = image_to_base64(file)
-                    
-                    if is_duplicate_image(person_name, base64_image):
-                        print("Duplicate image found. Skipping storage.")
-                        continue  
 
                     documents.append({
                         'person_name': person_name,
@@ -122,6 +120,7 @@ def upload_image():
 @app.route('/signature-matching', methods = ['POST'])
 @require_api_key_verification
 def signature_matching():
+    start_time = time.time()
     try:
         if request.method != 'POST':
             return jsonify({'error': 'POST Method not allowed'}), 405
@@ -136,23 +135,23 @@ def signature_matching():
             return jsonify({'error': 'No person name provided'}), 400
 
         if 'verification_image' not in request.files:
-            return jsonify({'error': 'No input image provided'}), 400
+            return jsonify({'error': 'No test image provided'}), 400
 
-        input_image = request.files['verification_image']
-        print("Input image is found..!!\nThe image is:", input_image)
+        test_image = request.files['verification_image']
+        print("test image is found..!!\nThe image is:", test_image)
 
-        if input_image and allowed_file(input_image.filename):
+        if test_image and allowed_file(test_image.filename):
             temp_dir = "static/uploads"
             os.makedirs(temp_dir, exist_ok=True)
-            input_image_path = os.path.join(temp_dir, "input.jpg")
+            test_image_path = os.path.join(temp_dir, f"{person_name}_test_image.jpg")
             
-            # Try saving the input image
+            # Try saving the test image
             try:
-                input_image.save(input_image_path)
-                print("The input image is saved.")
+                test_image.save(test_image_path)
+                print("The test image is saved.")
             except Exception as e:
-                print(f"Error saving input image: {e}")
-                return jsonify({'error': 'Failed to save input image'}), 500
+                print(f"Error saving test image: {e}")
+                return jsonify({'error': 'Failed to save test image'}), 500
 
             person_dir = os.path.join("static/person/", person_name)
             os.makedirs(person_dir, exist_ok=True)
@@ -171,16 +170,17 @@ def signature_matching():
 
             print(f"Number of signatures found: {len(signatures)}")
 
-            existing_files = set(os.listdir(person_dir))
-
+            # existing_files = set(os.listdir(person_dir))
+            
+            start_of_conversion = time.time()    
             for i, signature in enumerate(signatures):
                 signature_base64 = signature['signature']
                 signature_filename = f"{person_name}_{signature['_id']}_{i}.png"
                 signature_path = os.path.join(person_dir, signature_filename)
 
-                if signature_filename in existing_files:
-                    print(f"Signature file '{signature_filename}' already exists. Skipping conversion.")
-                    continue
+                # if signature_filename in existing_files:
+                #     print(f"Signature file '{signature_filename}' already exists. Skipping conversion.")
+                #     continue
 
                 # Convert and save the Base64 image
                 try:
@@ -190,29 +190,42 @@ def signature_matching():
                     print(f"Error converting base64 to image for signature {signature['_id']}: {e}")
                     return jsonify({'error': 'Failed to process signature image'}), 500
 
+            end_of_conversion = time.time()
             print("Converted all images successfully")
 
-            real_images_paths = [
-                os.path.join(person_dir, filename) for filename in os.listdir(person_dir) 
-                if filename.lower().endswith(('.png', '.jpg'))
-            ]
+            real_images_paths = [os.path.join(person_dir, filename) for filename in os.listdir(person_dir) ]
 
             try:
-                # print("Finding VGG score.....")
-                # result = is_signature_genuine(input_image_path, real_images_paths, similarity_threshold)
+                print("Finding VGG score.....")
+                result = is_signature_genuine(test_image_path, real_images_paths, similarity_threshold)
             
-                print("Finding ResNet score...")
-                result = is_signature_genuine_resnet(input_image_path, real_images_paths, similarity_threshold)
+                # print("Finding ResNet score...")
+                # result = is_signature_genuine_resnet(test_image_path, real_images_paths, similarity_threshold)
             except Exception as e:
                 print(f"Error in signature matching: {e}")
                 return jsonify({'error': 'Failed to match signatures'}), 500
-
-            return jsonify({
+            
+            end_time = time.time()
+            conversion_time = end_of_conversion - start_of_conversion 
+            elapsed_time = end_time - start_time
+            print("Time passed when converting:", str(timedelta(seconds=conversion_time)))
+            print("Time passed:", str(timedelta(seconds=elapsed_time)))
+            response = jsonify({
                 'vgg': {
                     'prediction': result[0],
                     'score': float(result[1])
                 }
             })
+            
+            # Delete the person_dir folder after returning the response
+            try:
+                import shutil
+                shutil.rmtree(person_dir)
+                print(f"Deleted the person directory: {person_dir}")
+            except Exception as e:
+                print(f"Error deleting person directory: {e}")
+            
+            return response
         
         else:
             return jsonify({'error': 'Invalid file format. Only PNG, JPG, JPEG files are allowed.'}), 400
@@ -227,7 +240,8 @@ def index():
     return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)
 
 
 # For real & forged signature 
@@ -242,16 +256,16 @@ if __name__ == '__main__':
 #             return jsonify({'error': 'No person name provided'}), 400
         
 #         if 'verification_image' not in request.files:
-#             return jsonify({'error': 'No input image provided'}), 400
+#             return jsonify({'error': 'No test image provided'}), 400
 
-#         input_image = request.files['verification_image']
-#         print("input image is FOund..!! \n THe image is :", input_image)
-#         if input_image and allowed_file(input_image.filename):
+#         test_image = request.files['verification_image']
+#         print("test image is FOund..!! \n THe image is :", test_image)
+#         if test_image and allowed_file(test_image.filename):
 #             temp_dir = "static/uploads"
 #             os.makedirs(temp_dir, exist_ok=True)
-#             input_image_path = os.path.join(temp_dir, "input.jpg")
-#             input_image.save(input_image_path)
-#             print("The input image is saved.")
+#             test_image_path = os.path.join(temp_dir, "test_image.jpg")
+#             test_image.save(test_image_path)
+#             print("The test image is saved.")
             
 #             person_dir = os.path.join("static/person/", person_name)
 #             os.makedirs(person_dir, exist_ok=True)
@@ -293,16 +307,16 @@ if __name__ == '__main__':
 #                     return jsonify({'error': 'Failed to process signature image'}), 500
 
 #             print("COnverting all the images Successfully")
-#             input_image_path = temp_dir + "/input.jpg"
-#             # print(input_image_path)
+#             test_image_path = temp_dir + "/test_image.jpg"
+#             # print(test_image_path)
 #             # print(person_dir)
 #             real_images_paths = [os.path.join(person_dir, filename) for filename in os.listdir(person_dir) if filename.lower().endswith(('.png', '.jpg'))]
             
             
 #             print("Finding VGG score.....")
-#             # result = is_signature_genuine(input_image_path, real_images_paths, similarity_threshold)
+#             # result = is_signature_genuine(test_image_path, real_images_paths, similarity_threshold)
 #             # print("Finding ResNet score......")
-#             result = is_signature_genuine_resnet(input_image_path, real_images_paths, similarity_threshold)
+#             result = is_signature_genuine_resnet(test_image_path, real_images_paths, similarity_threshold)
             
 #             return jsonify({
 #                 'vgg': {
