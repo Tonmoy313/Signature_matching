@@ -25,8 +25,9 @@ def data_store(db, documents):
     try:
         collection = db['tbl_signatures']
         # Check if index exists on _id and person_name
-        if 'person_name_1_id_1' not in collection.index_information():
-            db['tbl_signatures'].create_index([('person_name', pymongo.ASCENDING), ('_id', pymongo.ASCENDING)])
+        # if 'person_name_1__id_1' not in collection.index_information():
+            # db['tbl_signatures'].create_index([('person_name', pymongo.ASCENDING), ('_id', pymongo.ASCENDING)])
+        if 'person_name_1"' not in collection.index_information():
             db['tbl_signatures'].create_index([('person_name', pymongo.ASCENDING)])
 
         results = collection.insert_many(documents)
@@ -43,7 +44,7 @@ def data_store(db, documents):
 def fetch_signatures(db, person_name):
     try:
         collection = db['tbl_signatures']
-        documents = list(collection.find({'person_name': person_name}, {'signature': 1, '_id': 0}))
+        documents = list(collection.find({'person_name': person_name}, {'signature': 1, '_id': 1}))
   
         if documents:
             print(f"The signatures of {person_name} have been fetched successfully.")

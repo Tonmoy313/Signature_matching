@@ -174,6 +174,7 @@ def signature_matching():
             
             start_of_conversion = time.time()    
             for i, signature in enumerate(signatures):
+                print("The data is: ", signature)
                 signature_base64 = signature['signature']
                 signature_filename = f"{person_name}_{signature['_id']}_{i}.png"
                 signature_path = os.path.join(person_dir, signature_filename)
@@ -196,11 +197,11 @@ def signature_matching():
             real_images_paths = [os.path.join(person_dir, filename) for filename in os.listdir(person_dir) ]
 
             try:
-                print("Finding VGG score.....")
-                result = is_signature_genuine(test_image_path, real_images_paths, similarity_threshold)
+                # print("Finding VGG score.....")
+                # result = is_signature_genuine(test_image_path, real_images_paths, similarity_threshold)
             
-                # print("Finding ResNet score...")
-                # result = is_signature_genuine_resnet(test_image_path, real_images_paths, similarity_threshold)
+                print("Finding ResNet score...")
+                result = is_signature_genuine_resnet(test_image_path, real_images_paths, similarity_threshold)
             except Exception as e:
                 print(f"Error in signature matching: {e}")
                 return jsonify({'error': 'Failed to match signatures'}), 500
