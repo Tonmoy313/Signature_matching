@@ -1,5 +1,6 @@
-from Database.connection import connect_to_mongo, data_store, fetch_signatures
+from Database.connection import connect_to_mongo, data_store, fetch_signatures, search_person_names, get_unique_person_names
 from flask import Flask, request, jsonify, render_template
+from pymongo.errors import PyMongoError
 from dotenv import load_dotenv
 from functools import wraps
 from PIL import Image
@@ -236,108 +237,51 @@ def signature_matching():
         return jsonify({'error': 'An unexpected error occurred'}), 500
 
 
+@app.route('/search_person_names')
+def search_person_names_dynamicaly():
+
+    try:
+        db = connect_to_mongo()
+        if db is None:
+            raise ValueError("Failed to connect to the database")
+
+        query = request.args.get('q', '').strip()
+        person_names = search_person_names(db, query)
+        return jsonify(person_names)
+    except Exception as e:
+        print(f"Error during person name search route: {e}")
+        return jsonify([])
+    
+    
 @app.route('/')
 def index():
     return render_template('index.html')
-
+    
+     
 if __name__ == '__main__':
     # app.run(debug=True)
     app.run(host="0.0.0.0", port=5000)
 
 
-# For real & forged signature 
-# def signature_matching():
-#     if request.method == 'POST':
-#         person_name = request.form['person_name'].lower()
-#         similarity_threshold = float(request.form.get('threshold', 85))
-
-#         print("person Name:", person_name)
-#         print("threshold:", similarity_threshold)
-#         if not person_name:
-#             return jsonify({'error': 'No person name provided'}), 400
+# For DropDown
+# @app.route('/')
+# def index():
+#     try:
+#         db = connect_to_mongo()
+#         if db is None:
+#             raise ValueError("Failed to connect to the database")
         
-#         if 'verification_image' not in request.files:
-#             return jsonify({'error': 'No test image provided'}), 400
-
-#         test_image = request.files['verification_image']
-#         print("test image is FOund..!! \n THe image is :", test_image)
-#         if test_image and allowed_file(test_image.filename):
-#             temp_dir = "static/uploads"
-#             os.makedirs(temp_dir, exist_ok=True)
-#             test_image_path = os.path.join(temp_dir, "test_image.jpg")
-#             test_image.save(test_image_path)
-#             print("The test image is saved.")
-            
-#             person_dir = os.path.join("static/person/", person_name)
-#             os.makedirs(person_dir, exist_ok=True)
-#             print(f"The person {person_name} folder is created successfuly")
-            
-#             db = connect_to_mongo()
-#             signatures = fetch_signatures(db, person_name)
-#             if not signatures:
-#                 return jsonify({'error': f'No signatures found for {person_name}'}), 404
-            
-#             print(f"NO of signatures found: {len(signatures)}")
-#             # real_count = 0
-#             # forged_count = 0
-
-#             # for signature in signatures:
-#             #     if signature['type'] == 'real':
-#             #         real_count += 1
-#             #     elif signature['type'] == 'forged':
-#             #         forged_count += 1
-
-#             # Get a list of existing files in the person's directory
-#             existing_files = set(os.listdir(person_dir))
-
-#             for i, signature in enumerate(signatures): 
-#                 signature_base64 = signature['signature']
-#                 signature_filename = f"{person_name}_{signature['_id']}_{i}.png"
-#                 signature_path = os.path.join(person_dir, signature_filename)
-
-#                 if signature_filename in existing_files:
-#                     print(f"Signature file '{signature_filename}' already exists. Skipping conversion.")
-#                     continue  
-
-#                 # Convert and save the Base64 image
-#                 try:
-#                     base64_to_image(signature_base64.encode(), signature_path)
-#                     print(f"Converting base64 to image: {signature_filename}")
-#                 except Exception as e:
-#                     print(f"Error converting base64 to image for signature {signature['_id']}: {e}")
-#                     return jsonify({'error': 'Failed to process signature image'}), 500
-
-#             print("COnverting all the images Successfully")
-#             test_image_path = temp_dir + "/test_image.jpg"
-#             # print(test_image_path)
-#             # print(person_dir)
-#             real_images_paths = [os.path.join(person_dir, filename) for filename in os.listdir(person_dir) if filename.lower().endswith(('.png', '.jpg'))]
-            
-            
-#             print("Finding VGG score.....")
-#             # result = is_signature_genuine(test_image_path, real_images_paths, similarity_threshold)
-#             # print("Finding ResNet score......")
-#             result = is_signature_genuine_resnet(test_image_path, real_images_paths, similarity_threshold)
-            
-#             return jsonify({
-#                 'vgg': {
-#                     'prediction': result[0],
-#                     'score': float(result[1])
-#                 }
-#             })
-#             # return jsonify({
-#             #     'vgg': {
-#             #         'prediction': 'Genuine' if result[0] else 'Forged',
-#             #         'score': float(result[1])
-#             #     },
-#             #     'resnet': {
-#             #         'prediction': 'Genuine' if result_r[0] else 'Forged',
-#             #         'score': float(result_r[1])
-#             #     }
-#             # })
-            
-
-#         else:
-#             return jsonify({'error': 'Invalid file format. Only PNG, JPG, JPEG files are allowed.'}), 400
-#     else:
-#         return jsonify({'error': 'POST Method not allowed'}), 405
+#         person_names = get_unique_person_names(db)
+#         if person_names is None:
+#             raise ValueError("Error fetching person names from the database")
+        
+#         return render_template('index.html', person_names=person_names)
+#     except ValueError as ve:
+#         print(f"Error: {ve}")
+#         return render_template('index.html', person_names=[], error_message=str(ve))
+#     except PyMongoError as e:
+#         print(f"Database Error: {e}")
+#         return render_template('index.html', person_names=[], error_message="Database error occurred.")
+#     except Exception as ex:
+#         print(f"Unexpected Error: {ex}")
+#         return render_template('index.html', person_names=[], error_message="An unexpected error occurred.")

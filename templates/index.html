@@ -25,11 +25,11 @@
           <div id="alertContainer"></div>
           <div class="mb-3">
             <label for="personName" class="form-label">Person's Name</label>
-            <input id="personName" name="person_name" type="text" class="form-control">
+            <input id="personName" name="person_name" type="text" class="form-control" placeholder="Enter a person name...">
           </div>
 
           <div class="mb-3">
-            <label for="referenceImages" class="form-label">Upload Reference Images (Max 6)</label>
+            <label for="referenceImages" class="form-label">Upload Reference Images (Max 5)</label>
             <input id="referenceImages" name="reference_images" type="file" accept="image/*" multiple
               class="form-control">
           </div>
@@ -38,7 +38,7 @@
 
           <!-- Centered Upload Button -->
           <div class="text-center">
-            <button type="button" onclick="uploadSignatures()" class="btn btn-warning btn-lg px-5 fw-bold text-white">
+            <button type="button" onclick="uploadSignatures()" class="btn btn-warning btn-lg px-5 fw-bold">
               Upload
             </button>
           </div>
@@ -88,10 +88,33 @@
         <div class="card-body">
           <div id="verifyAlertContainer"></div>
           
+          <!--
+          ============ For DropDown =============
           <div class="mb-3">
             <label for="personName_v" class="form-label">Person's Name</label>
-            <input id="personName_v" name="person_name" type="text" class="form-control">
+             <select id="personName_v" name="person_name" class="form-select">
+              <option value="">--Select Person--</option>
+              {% if person_names %}
+                  {% for person in person_names %}
+                      <option value="{{ person }}">{{ person|title }}</option>
+                  {% endfor %}
+              {% else %}
+                  <option value="" disabled>--No names available--</option>
+              {% endif %}
+          </select> -->
+
+
+          <div class="search-wrapper mb-4">
+              <label for="personNameSearch" class='form-label'>Search Person's Name</label>
+              <input 
+                  type="text" 
+                  id="personNameSearch" 
+                  placeholder="Type a name..." 
+                  oninput="searchPersonNames(this.value)"
+              />
+              <div id="personNameResults" class="dropdown-menu"></div>
           </div>
+
           <div class="mb-3">
             <label for="verificationImage" class="form-label">Upload Signature for Verification</label>
             <input id="verificationImage" name="verification_image" type="file" accept="image/*" class="form-control">
@@ -116,7 +139,7 @@
 
       <!-- Centered Verify Button -->
       <div class="text-center">
-        <button type="button" onclick="verifySignature()" class="btn btn-warning btn-lg px-5 fw-bold text-white">
+        <button type="button" onclick="verifySignature()" class="btn btn-warning btn-lg px-5 fw-bold">
           Verify Signature
         </button>
       </div>
@@ -175,7 +198,7 @@
   </div>
 
   
-  <footer>
+  <footer class="mt-5">
     <p>&copy; <span id="current-year"></span> Tonmoy. All rights reserved.</p>
     <p>Contact: <a href="mailto:abdullahalmahmud.cse007@gmail.com">abdullahalmahmud.cse007@gmail.com</a></p>
   </footer>

@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const thresholdValue = document.getElementById('thresholdValue');
 
     // Maximum number of reference images
-    const MAX_REFERENCE_IMAGES = 6;
+    const MAX_REFERENCE_IMAGES = 5;
 
     // Update threshold value display
     thresholdInput.addEventListener('input', function() {
@@ -157,7 +157,7 @@ function uploadSignatures() {
     }
 
     if (images.length > 6) {
-        showAlert('Please upload a maximum of 6 reference images.', 'warning');
+        showAlert('Please upload a maximum of 5 reference images.', 'warning');
         return;
     }
 
@@ -254,7 +254,7 @@ function verifySignature() {
 
   // Get threshold and person name
   const threshold = parseInt(document.getElementById('threshold').value);
-  const personName = document.getElementById('personName_v').value; 
+  const personName = document.getElementById('personNameSearch').value; 
   if (!personName) {
     showAlert('Please enter the person\'s name.', 'warning', 'verifyAlertContainer');
     return;
@@ -354,6 +354,68 @@ function showResults(data) {
     const alertType = isGenuine ? 'success' : 'danger';
     showAlert(alertMessage, alertType, 'verifyAlertContainer');
 }
+
+
+// ========================== Dynamic Search ========================================
+function toTitleCase(str) {
+    return str
+        .toLowerCase()
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+}
+
+function searchPersonNames(query) {
+    const resultsDiv = document.getElementById("personNameResults");
+    
+    // Clear and hide results if input is empty
+    if (query.length === 0) {
+        resultsDiv.innerHTML = "";
+        resultsDiv.classList.remove("show");
+        return;
+    }
+
+    resultsDiv.classList.add("show");
+    
+    fetch(`/search_person_names?q=${encodeURIComponent(query)}`)
+        .then((response) => response.json())
+        .then((data) => {
+            resultsDiv.innerHTML = ""; 
+            if (data.length > 0) {
+                data.forEach((name) => {
+                    const option = document.createElement("div");
+                    option.className = "dropdown-item";
+                    option.textContent = toTitleCase(name);
+                    option.onclick = () => selectName(name);
+                    resultsDiv.appendChild(option);
+                });
+            } else {
+                resultsDiv.innerHTML = '<div class="dropdown-item">No results found</div>';
+            }
+        })
+        .catch((error) => {
+            console.error("Error fetching names:", error);
+            resultsDiv.innerHTML = '<div class="dropdown-item">Error loading results</div>';
+        });
+}
+
+function selectName(name) {
+    document.getElementById("personNameSearch").value = toTitleCase(name);
+    const resultsDiv = document.getElementById("personNameResults");
+    resultsDiv.innerHTML = ""; // Clear results
+    resultsDiv.classList.remove("show"); // Hide dropdown
+}
+
+// Optional: Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const searchContainer = document.querySelector('.search-wrapper');
+    const resultsDiv = document.getElementById("personNameResults");
+    
+    if (!searchContainer.contains(event.target)) {
+        resultsDiv.classList.remove("show");
+    }
+});
+
 
 //For 2 model scores
 // function showResults(data) {
